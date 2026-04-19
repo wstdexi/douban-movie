@@ -1,3 +1,5 @@
+import os
+
 from sqlalchemy import text
 
 from app.database.base_class import Base
@@ -58,6 +60,12 @@ def run_migrations() -> None:
 
 
 def init_db() -> None:
-    Base.metadata.create_all(bind=engine)
+    alembic_flag = os.getenv("RUN_ALEMBIC_UPGRADE", "").strip().lower()
+    alembic_enabled = alembic_flag in {"1", "true", "yes", "on"}
+    if not alembic_enabled:
+        Base.metadata.create_all(bind=engine)
     run_migrations()
-    print("数据库表已创建（基于 Movie 模型）。")
+    if alembic_enabled:
+        print("数据库迁移：已跳过 SQLAlchemy create_all（由 Alembic 管理表结构）。")
+    else:
+        print("数据库表已创建（基于 Movie 模型）。")

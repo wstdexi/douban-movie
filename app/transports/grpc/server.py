@@ -1,11 +1,13 @@
 from concurrent import futures
 import os
+import subprocess
+import sys
 import threading
 import time
 
 import grpc
 import uvicorn
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.database.migration import init_db
@@ -19,10 +21,59 @@ from app.transports.http.grpc_gateway import app as http_app
 DEFAULT_GRPC_ADDR = "0.0.0.0:50051"
 DEFAULT_HTTP_ADDR = "0.0.0.0:8000"
 
+_ALEMBIC_INITIAL_REV = "20260417_0001"
+
+
+def _maybe_run_alembic() -> None:
+    flag = os.getenv("RUN_ALEMBIC_UPGRADE", "").strip().lower()
+    if flag not in {"1", "true", "yes", "on"}:
+        return
+
+    with SessionLocal() as db:
+        movie_exists = db.scalar(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_name = 'movie'
+                )
+                """
+            )
+        )
+        alembic_version_exists = db.scalar(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_schema = 'public' AND table_name = 'alembic_version'
+                )
+                """
+            )
+        )
+        alembic_version_rows = 0
+        if alembic_version_exists:
+            alembic_version_rows = db.scalar(text("SELECT COUNT(*) FROM alembic_version")) or 0
+
+    # If DB already has the `movie` table from older bootstrap paths, but Alembic isn't
+    # tracking the schema yet, stamp the initial revision to avoid "relation already exists"
+    # on upgrade.
+    if movie_exists and ((not alembic_version_exists) or alembic_version_rows == 0):
+        print(f"Alembic: stamping {_ALEMBIC_INITIAL_REV} (existing schema detected)")
+        subprocess.run(
+            [sys.executable, "-m", "alembic", "stamp", _ALEMBIC_INITIAL_REV],
+            check=True,
+        )
+
+    print("Alembic: upgrade head")
+    subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], check=True)
+
 
 def bootstrap_data_if_needed(max_retries: int = 30, retry_interval: float = 2.0) -> None:
     for attempt in range(1, max_retries + 1):
         try:
+            _maybe_run_alembic()
             init_db()
             with SessionLocal() as db:
                 movie_count = db.scalar(select(func.count()).select_from(Movie)) or 0

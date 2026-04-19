@@ -9,6 +9,7 @@ RUN pip install --no-cache-dir \
     uvicorn \
     sqlalchemy \
     psycopg2-binary \
+    alembic \
     requests \
     beautifulsoup4 \
     lxml \
