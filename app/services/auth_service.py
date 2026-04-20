@@ -3,7 +3,7 @@
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.core.user_controller import user_core_controller
+from app.core.user_crud import user_core_controller
 from app.models.user import User
 from app.schemas.login import CredentialsSchema, JWTOut
 from app.settings import settings

@@ -5,7 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.core.user_controller import user_core_controller
+from app.core.user_crud import user_core_controller
 from app.models.system.session import SessionLocal
 from app.models.user import User
 from app.settings import settings

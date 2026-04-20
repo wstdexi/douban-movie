@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import Session
 
-from app.core.movie_controller import movie_core_controller
+from app.core.movie_crud import movie_core_controller
 from app.models.movies import Movie
 from app.schemas.movie import MovieListQuery
 

@@ -11,7 +11,7 @@ from app.models.system.session import SessionLocal
 from app.settings import settings
 from app.models.movies import Movie
 from app.models.user import User
-from app.core.user_controller import user_core_controller
+from app.core.user_crud import user_core_controller
 from app.utils.security import get_password_hash
 
 

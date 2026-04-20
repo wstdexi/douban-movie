@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     )
     # 默认导出路径（脚本使用）。
     default_export_path: Path = Path("doc/movies.csv")
+    logs_root: Path = Path("logs")
 
     model_config = SettingsConfigDict(
         env_file=".env",          # 自动读 .env

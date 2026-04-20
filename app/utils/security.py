@@ -5,7 +5,7 @@ from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from app.core.user_controller import user_core_controller
+from app.core.user_crud import user_core_controller
 from app.schemas.login import JWTPayload
 from app.settings.config import settings
 from app.models.user import User
