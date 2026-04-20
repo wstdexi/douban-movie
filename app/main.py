@@ -19,8 +19,8 @@ delete_movie_api = movie_route.delete_movie_api
 clear_movies_api = movie_route.clear_movies_api
 export_movies_csv = movie_route.export_movies_csv
 
-
+# 后端启动入口
 if __name__ == "__main__":
     import uvicorn
-    print("http://127.0.0.1:8000/docs")
+    print("文档:http://127.0.0.1:8000/docs")
     uvicorn.run(app, host="0.0.0.0", port=8000)
