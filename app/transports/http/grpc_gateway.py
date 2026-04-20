@@ -7,9 +7,11 @@ from fastapi.responses import StreamingResponse
 
 from app.transports.grpc.clients.movie_client import MovieClient
 
+# HTTP网关应用：将HTTP请求转发到gRPC服务。
 app = FastAPI(title="Douban gRPC Gateway", version="1.0.0")
 
 
+# 将gRPC异常映射为HTTP异常。
 def _to_http_error(exc: grpc.RpcError) -> HTTPException:
     code = exc.code()
     detail = exc.details() or "gRPC call failed"
@@ -22,6 +24,7 @@ def _to_http_error(exc: grpc.RpcError) -> HTTPException:
     return HTTPException(status_code=500, detail=detail)
 
 
+# 将gRPC电影对象转换为HTTP响应字典。
 def _movie_to_dict(movie) -> dict:
     return {
         "id": movie.id,
@@ -34,6 +37,7 @@ def _movie_to_dict(movie) -> dict:
 
 
 @app.get("/v1/movies")
+# 分页查询电影列表。
 def list_movies(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=20, ge=1, le=100),
@@ -56,6 +60,7 @@ def list_movies(
 
 
 @app.get("/v1/movies/{movie_id}")
+# 按ID查询电影。
 def get_movie(movie_id: int):
     client = MovieClient()
     try:
@@ -68,6 +73,7 @@ def get_movie(movie_id: int):
 
 
 @app.post("/v1/movies")
+# 新增电影。
 def create_movie(payload: dict):
     client = MovieClient()
     try:
@@ -88,6 +94,7 @@ def create_movie(payload: dict):
 
 
 @app.put("/v1/movies/{movie_id}")
+# 更新电影。
 def update_movie(movie_id: int, payload: dict):
     client = MovieClient()
     try:
@@ -107,6 +114,7 @@ def update_movie(movie_id: int, payload: dict):
 
 
 @app.delete("/v1/movies/{movie_id}")
+# 删除单个电影。
 def delete_movie(movie_id: int):
     client = MovieClient()
     try:
@@ -119,6 +127,7 @@ def delete_movie(movie_id: int):
 
 
 @app.delete("/v1/movies")
+# 清空电影数据。
 def clear_movies():
     client = MovieClient()
     try:
@@ -131,6 +140,7 @@ def clear_movies():
 
 
 @app.get("/v1/movies/export/csv")
+# 导出电影CSV。
 def export_movies_csv(
     min_rating: float | None = Query(default=None, ge=0, le=10),
     max_rating: float | None = Query(default=None, ge=0, le=10),

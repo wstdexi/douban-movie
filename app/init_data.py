@@ -6,9 +6,9 @@ import requests
 from bs4 import BeautifulSoup
 from sqlalchemy import select
 
-from app.config.settings import settings
-from app.database.migration import init_db
-from app.database.session import SessionLocal
+from app.models.system.migration import init_db
+from app.models.system.session import SessionLocal
+from app.settings import settings
 from app.models.movies import Movie
 
 
@@ -114,13 +114,13 @@ def save_movies(movies: List[Dict[str, str]]) -> int:
         session.commit()
     return upserted
 
-
+#  数据库初始化主函数
 def main() -> None:
     init_db()
     movies = crawl_douban_top250()
     upserted = save_movies(movies)
     print(f"抓取 {len(movies)} 条，入库/更新 {upserted} 条。")
 
-
+#。 运行接口处
 if __name__ == "__main__":
     main()

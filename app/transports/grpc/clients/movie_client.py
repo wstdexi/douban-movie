@@ -5,6 +5,7 @@ import grpc
 from app.transports.grpc.generated import movie_pb2, movie_pb2_grpc
 
 
+# gRPC客户端封装，提供电影相关远程调用方法。
 class MovieClient:
     def __init__(self, target: str | None = None) -> None:
         target = target or os.getenv("GRPC_TARGET", "127.0.0.1:50051")

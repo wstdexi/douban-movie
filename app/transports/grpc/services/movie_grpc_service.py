@@ -2,12 +2,13 @@ import grpc
 import traceback
 
 from app import main as api_routes
-from app.database.session import SessionLocal
+from app.models.system.session import SessionLocal
 from app.models.movies import Movie
 from app.schemas.movie import MovieBase, MovieUpdate
 from app.transports.grpc.generated import movie_pb2, movie_pb2_grpc
 
 
+# 将ORM对象转换为gRPC响应模型。
 def _to_proto_movie(movie) -> movie_pb2.Movie:
     return movie_pb2.Movie(
         id=movie.id,
@@ -20,6 +21,7 @@ def _to_proto_movie(movie) -> movie_pb2.Movie:
 
 
 class MovieService(movie_pb2_grpc.MovieServiceServicer):
+    # 查询电影列表。
     def ListMovies(self, request, context):
         try:
             min_rating = request.min_rating if request.HasField("min_rating") else None
@@ -48,6 +50,7 @@ class MovieService(movie_pb2_grpc.MovieServiceServicer):
             print("Unhandled ListMovies exception:\n" + traceback.format_exc())
             context.abort(grpc.StatusCode.INTERNAL, f"Unhandled ListMovies error: {type(exc).__name__}: {exc!r}")
 
+    # 按ID查询电影。
     def GetMovie(self, request, context):
         try:
             with SessionLocal() as db:
@@ -65,6 +68,7 @@ class MovieService(movie_pb2_grpc.MovieServiceServicer):
             print("Unhandled GetMovie exception:\n" + traceback.format_exc())
             context.abort(grpc.StatusCode.INTERNAL, f"Unhandled GetMovie error: {type(exc).__name__}: {exc!r}")
 
+    # 新增电影。
     def CreateMovie(self, request, context):
         try:
             with SessionLocal() as db:
@@ -89,6 +93,7 @@ class MovieService(movie_pb2_grpc.MovieServiceServicer):
             print("Unhandled CreateMovie exception:\n" + traceback.format_exc())
             context.abort(grpc.StatusCode.INTERNAL, f"Unhandled CreateMovie error: {type(exc).__name__}: {exc!r}")
 
+    # 更新电影。
     def UpdateMovie(self, request, context):
         try:
             with SessionLocal() as db:
@@ -118,6 +123,7 @@ class MovieService(movie_pb2_grpc.MovieServiceServicer):
             print("Unhandled UpdateMovie exception:\n" + traceback.format_exc())
             context.abort(grpc.StatusCode.INTERNAL, f"Unhandled UpdateMovie error: {type(exc).__name__}: {exc!r}")
 
+    # 删除单个电影。
     def DeleteMovie(self, request, context):
         try:
             with SessionLocal() as db:
@@ -132,6 +138,7 @@ class MovieService(movie_pb2_grpc.MovieServiceServicer):
             print("Unhandled DeleteMovie exception:\n" + traceback.format_exc())
             context.abort(grpc.StatusCode.INTERNAL, f"Unhandled DeleteMovie error: {type(exc).__name__}: {exc!r}")
 
+    # 清空电影数据。
     def ClearMovies(self, request, context):
         try:
             with SessionLocal() as db:

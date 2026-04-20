@@ -1,3 +1,1 @@
-from app.models.movies import Movie
-
-__all__ = ["Movie"]
+# 模型包初始化保持轻量，避免循环导入问题。

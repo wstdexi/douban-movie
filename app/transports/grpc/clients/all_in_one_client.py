@@ -6,6 +6,7 @@ import grpc
 from app.transports.grpc.clients.movie_client import MovieClient
 
 
+# 命令行一体化客户端：用于演示和调用电影gRPC接口。
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="All-in-one gRPC movie client")
     parser.add_argument(

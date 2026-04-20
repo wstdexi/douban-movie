@@ -1,3 +1,4 @@
-from app.controllers import movie_controller
+# 控制器包初始化，统一导出控制器模块。
+from app.controllers import auth_controller
 
-__all__ = ["movie_controller"]
+__all__ = ["auth_controller"]

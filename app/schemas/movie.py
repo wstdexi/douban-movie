@@ -1,6 +1,13 @@
 from pydantic import AliasChoices, BaseModel, Field, HttpUrl
 
+#
+class MoviePageList(BaseModel):
+    skip: int
+    limit: int
+    min_rating: float | None = None
+    max_rating: float | None = None
 
+#。 基础的电影参数结构
 class MovieBase(BaseModel):
     title: str
     rating: float
@@ -8,7 +15,7 @@ class MovieBase(BaseModel):
     quote: str | None = None
     url: HttpUrl
 
-
+#  电影更新所需的结构
 class MovieUpdate(BaseModel):
     title: str | None = None
     rating: float | None = None
@@ -18,7 +25,7 @@ class MovieUpdate(BaseModel):
     quote: str | None = None
     url: HttpUrl | None = None
 
-
+#  输出电影结构
 class OutMovie(BaseModel):
     id: int
     title: str

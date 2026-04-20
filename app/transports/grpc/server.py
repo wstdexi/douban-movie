@@ -10,8 +10,8 @@ import uvicorn
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.database.migration import init_db
-from app.database.session import SessionLocal
+from app.models.system.migration import init_db
+from app.models.system.session import SessionLocal
 from app.init_data import crawl_douban_top250, save_movies
 from app.models.movies import Movie
 from app.transports.grpc.generated import movie_pb2_grpc

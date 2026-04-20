@@ -4,8 +4,8 @@ from sqlalchemy import create_engine, pool
 
 from alembic import context
 
-from app.config.settings import settings
-from app.database.base_class import Base
+from app.models.system.base_class import Base
+from app.settings import settings
 
 # Import models so Base.metadata is populated for autogenerate.
 import app.models.movies  # noqa: F401
