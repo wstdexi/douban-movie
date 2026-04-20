@@ -1,63 +1,21 @@
-from jose import JWTError, jwt
-from sqlalchemy.orm import Session
+# 认证参数校验控制器：负责登录与刷新接口的输入校验。
 
-from app.controllers.user_controller import user_controller
-from app.models.user import User
-from app.schemas.login import CredentialsSchema, JWTOut
-from app.settings import settings
-import app.utils.security as security
+from app.schemas.login import CredentialsSchema
 
 
-# 认证控制器：封装登录、刷新等认证逻辑。
-class AuthController:
-    # 登录：校验账号密码并签发 token。
-    def login(self, db: Session, credentials: CredentialsSchema) -> JWTOut:
-        user = security.authenticate_user(
-            identifier=credentials.username, password=credentials.password, db=db
-        )
-        if not user:
-            raise ValueError("错误的 用户名/邮箱 或 密码")
+class AuthRequestController:
+    # 校验登录输入。
+    def validate_login_input(self, credentials: CredentialsSchema) -> None:
+        if not credentials.username.strip():
+            raise ValueError("username is required")
+        if not credentials.password:
+            raise ValueError("password is required")
 
-        access_payload = security.build_access_payload(user=user)
-        refresh_payload = security.build_refresh_payload(user=user)
-        access_token = security.create_access_token(data=access_payload)
-        refresh_token = security.create_access_token(data=refresh_payload)
-        return JWTOut(access_token=access_token, refresh_token=refresh_token)
-
-    # 刷新：使用 refresh token 换取新的 token。
-    def refresh(self, db: Session, refresh_token: str) -> JWTOut:
-        try:
-            payload = jwt.decode(
-                refresh_token,
-                settings.jwt_secret_key,
-                algorithms=[settings.jwt_algorithm],
-                options={"verify_aud": False},
-            )
-        except JWTError as exc:
-            raise ValueError("Invalid refreshToken") from exc
-
-        data = payload.get("data") or {}
-        if data.get("tokenType") != "refreshToken":
-            raise ValueError("Invalid token type")
-
-        user_id = data.get("userId")
-        if not user_id:
-            raise ValueError("Invalid token payload")
-
-        user = user_controller.get(db, int(user_id))
-        if not user:
-            raise ValueError("User not found")
-
-        access_payload = security.build_access_payload(user=user)
-        refresh_payload = security.build_refresh_payload(user=user)
-        access_token = security.create_access_token(data=access_payload)
-        new_refresh_token = security.create_access_token(data=refresh_payload)
-        return JWTOut(access_token=access_token, refresh_token=new_refresh_token)
-
-    # 获取当前用户（透传）。
-    def me(self, current_user: User) -> User:
-        return current_user
+    # 校验刷新令牌输入。
+    def validate_refresh_input(self, refresh_token: str | None) -> None:
+        if not refresh_token:
+            raise ValueError("Missing refreshToken")
 
 
-auth_controller = AuthController()
+auth_request_controller = AuthRequestController()
 

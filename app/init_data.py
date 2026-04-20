@@ -11,7 +11,7 @@ from app.models.system.session import SessionLocal
 from app.settings import settings
 from app.models.movies import Movie
 from app.models.user import User
-from app.controllers.user_controller import user_controller
+from app.core.user_controller import user_core_controller
 from app.utils.security import get_password_hash
 
 
@@ -132,9 +132,9 @@ def ensure_superuser() -> None:
     with SessionLocal() as session:
         # 已存在超级用户或账号/邮箱已存在则跳过。
         if (
-            user_controller.get_any_superuser(session)
-            or user_controller.get_by_username(session, username)
-            or user_controller.get_by_email(session, email)
+            user_core_controller.get_any_superuser(session)
+            or user_core_controller.get_by_username(session, username)
+            or user_core_controller.get_by_email(session, email)
         ):
             print("超级用户已存在，跳过创建。")
             return

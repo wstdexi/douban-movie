@@ -9,6 +9,7 @@ from app.settings import settings
 
 # Import models so Base.metadata is populated for autogenerate.
 import app.models.movies  # noqa: F401
+import app.models.user    # noqa: F401
 
 config = context.config
 

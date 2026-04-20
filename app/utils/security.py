@@ -5,7 +5,7 @@ from jose import jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from app.controllers.user_controller import user_controller
+from app.core.user_controller import user_core_controller
 from app.schemas.login import JWTPayload
 from app.settings.config import settings
 from app.models.user import User
@@ -36,7 +36,7 @@ def get_password_hash(password: str) -> str:
 
 # 校验用户账号密码（username 或 email 均可）。
 def authenticate_user(*, identifier: str, password: str, db: Session) -> User | None:
-    user = user_controller.get_by_identifier(db, identifier)
+    user = user_core_controller.get_by_identifier(db, identifier)
     if not user:
         return None
     if not verify_password(password, user.hashed_password):

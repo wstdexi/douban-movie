@@ -1,48 +1,27 @@
-# 电影控制器：继承CRUDBase，封装电影相关数据库操作。
+# 电影参数校验控制器：负责路由层输入参数校验与规范化。
 
-from sqlalchemy import delete, func, select
-from sqlalchemy.orm import Session
-
-from app.core.crud import CRUDBase
-from app.models.movies import Movie
 from app.schemas.movie import MovieBase, MovieListQuery, MovieUpdate
 
 
-class MovieController(CRUDBase[Movie, MovieBase, MovieUpdate]):
-    def __init__(self) -> None:
-        super().__init__(Movie)
+class MovieRequestController:
+    # 校验分页查询参数。
+    def validate_list_query(self, query: MovieListQuery) -> None:
+        if query.limit > 100:
+            raise ValueError("limit cannot exceed 100")
 
-    # 分页查询电影列表（可按评分区间过滤）。
-    def list_movies(
-        self,
-        db: Session,
-        query: MovieListQuery,
-    ) -> list[Movie]:
-        stmt = select(Movie)
-        if query.min_rating is not None:
-            stmt = stmt.where(Movie.rating >= query.min_rating)
-        if query.max_rating is not None:
-            stmt = stmt.where(Movie.rating <= query.max_rating)
-        stmt = stmt.order_by(Movie.rating.desc(), Movie.comments_count.desc(), Movie.id.asc())
-        stmt = stmt.offset(query.skip).limit(query.limit)
-        return list(db.scalars(stmt).all())
+    # 校验并规范化新增数据。
+    def normalize_create_payload(self, movie_in: MovieBase) -> dict:
+        movie_data = movie_in.model_dump()
+        movie_data["url"] = str(movie_data["url"])
+        return movie_data
 
-    # 通过URL查询电影。
-    def get_by_url(self, db: Session, url: str) -> Movie | None:
-        stmt = select(Movie).where(Movie.url == url)
-        return db.scalar(stmt)
-
-    # 清空电影表。
-    def delete_all(self, db: Session) -> int:
-        result = db.execute(delete(Movie))
-        db.commit()
-        return result.rowcount or 0
-
-    # 统计电影数量。
-    def count(self, db: Session) -> int:
-        stmt = select(func.count()).select_from(Movie)
-        return int(db.scalar(stmt) or 0)
+    # 校验并规范化更新数据。
+    def normalize_update_payload(self, movie_in: MovieUpdate) -> dict:
+        update_data = movie_in.model_dump(exclude_unset=True)
+        if "url" in update_data and update_data["url"] is not None:
+            update_data["url"] = str(update_data["url"])
+        return update_data
 
 
-movie_controller = MovieController()
+movie_request_controller = MovieRequestController()
 

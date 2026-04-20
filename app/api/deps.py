@@ -5,7 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.controllers.user_controller import user_controller
+from app.core.user_controller import user_core_controller
 from app.models.system.session import SessionLocal
 from app.models.user import User
 from app.settings import settings
@@ -66,7 +66,7 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = user_controller.get(db, int(user_id))
+    user = user_core_controller.get(db, int(user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
