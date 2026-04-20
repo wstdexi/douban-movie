@@ -21,4 +21,5 @@ dependencies = [
     "requests>=2.31.0",
     "sqlalchemy>=2.0.0",
     "uvicorn>=0.30.0",
+    "bcrypt>=4.1.0,<5.0.0"
 ]
