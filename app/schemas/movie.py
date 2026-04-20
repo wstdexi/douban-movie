@@ -1,11 +1,17 @@
-from pydantic import AliasChoices, BaseModel, Field, HttpUrl
+from pydantic import AliasChoices, BaseModel, Field, HttpUrl, model_validator
+from app.schemas.common import PageParams
 
-#
-class MoviePageList(BaseModel):
-    skip: int
-    limit: int
-    min_rating: float | None = None
-    max_rating: float | None = None
+
+# 电影列表查询参数（分页 + 评分过滤）。
+class MovieListQuery(PageParams):
+    min_rating: float | None = Field(default=None, ge=0, le=10)
+    max_rating: float | None = Field(default=None, ge=0, le=10)
+
+    @model_validator(mode="after")
+    def check_rating_range(self) -> "MovieListQuery":
+        if self.min_rating is not None and self.max_rating is not None and self.min_rating > self.max_rating:
+            raise ValueError("min_rating cannot exceed max_rating")
+        return self
 
 #。 基础的电影参数结构
 class MovieBase(BaseModel):

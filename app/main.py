@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.api.v1.auth import router as auth_router
 from app.api.v1.route import movie_route
 
 # 创建fastapi架构
@@ -7,6 +8,7 @@ app = FastAPI(title="豆瓣电影 API", version="1.0.0")
 
 # 添加电影相关路由
 app.include_router(movie_route.router)
+app.include_router(auth_router.router)
 
 # 保留这些别名，供 gRPC 服务和脚本复用。
 list_movies = movie_route.list_movies

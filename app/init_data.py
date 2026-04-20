@@ -10,6 +10,9 @@ from app.models.system.migration import init_db
 from app.models.system.session import SessionLocal
 from app.settings import settings
 from app.models.movies import Movie
+from app.models.user import User
+from app.controllers.user_controller import user_controller
+from app.utils.security import get_password_hash
 
 
 def fetch_page(start: int, timeout: int = 10) -> str:
@@ -68,7 +71,7 @@ def parse_movies(html: str) -> List[Dict[str, str]]:
     return movies
 
 
-def crawl_douban_top250(delay_seconds: float = 1.0) -> List[Dict[str, str]]:
+def crawl_douban_top250(delay_seconds: float = 0.1) -> List[Dict[str, str]]:
     all_movies: List[Dict[str, str]] = []
     for start in range(0, 250, 25):
         try:
@@ -114,9 +117,42 @@ def save_movies(movies: List[Dict[str, str]]) -> int:
         session.commit()
     return upserted
 
+
+# 创建超级用户（如果不存在则创建）。
+def ensure_superuser() -> None:
+    # 从配置读取超级用户信息（可在 .env 中覆盖）。
+    username = settings.superuser_username.strip()
+    email = settings.superuser_email.strip()
+    password = settings.superuser_password.strip()
+
+    if not password:
+        print("未设置 SUPERUSER_PASSWORD，跳过创建超级用户。")
+        return
+
+    with SessionLocal() as session:
+        # 已存在超级用户或账号/邮箱已存在则跳过。
+        if (
+            user_controller.get_any_superuser(session)
+            or user_controller.get_by_username(session, username)
+            or user_controller.get_by_email(session, email)
+        ):
+            print("超级用户已存在，跳过创建。")
+            return
+
+        user = User(
+            username=username,
+            email=email,
+            hashed_password=get_password_hash(password),
+            is_superuser=True,
+        )
+        session.add(user)
+        session.commit()
+        print(f"已创建超级用户: {username} ({email})")
+
 #  数据库初始化主函数
 def main() -> None:
     init_db()
+    ensure_superuser()
     movies = crawl_douban_top250()
     upserted = save_movies(movies)
     print(f"抓取 {len(movies)} 条，入库/更新 {upserted} 条。")

@@ -1,2 +1,12 @@
-# 认证相关请求与响应模型文件（预留）。
+from pydantic import BaseModel
+
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    email: str
+    is_superuser: bool
+    signature: str | None = None
+
+    model_config = {"from_attributes": True}
 
