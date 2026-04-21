@@ -1,6 +1,6 @@
 from typing import Generator
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
@@ -24,19 +24,7 @@ def get_db() -> Generator[Session, None, None]:
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 
-# 获取当前登录用户（解析 Bearer Token -> 解 JWT -> 查库）。
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
-    db: Session = Depends(get_db),
-) -> User:
-    if credentials is None or credentials.scheme.lower() != "bearer":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    token = credentials.credentials
+def resolve_current_user_from_token(token: str, db: Session) -> User:
     if is_token_revoked(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -81,3 +69,22 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+# 获取当前登录用户（解析 Bearer Token -> 解 JWT -> 查库）。
+def get_current_user(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    state_user = getattr(request.state, "current_user", None)
+    if state_user is not None:
+        return state_user
+
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return resolve_current_user_from_token(credentials.credentials, db)

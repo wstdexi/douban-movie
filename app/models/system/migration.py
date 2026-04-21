@@ -6,7 +6,6 @@ from alembic.util import CommandError
 from sqlalchemy import inspect
 
 from app.models.movies import Movie  # noqa: F401
-from app.models.test import Test  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.system.base_class import Base
 from app.models.system.session import engine
