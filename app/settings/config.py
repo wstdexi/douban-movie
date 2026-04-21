@@ -4,6 +4,9 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
 class Settings(BaseSettings):
     # 数据库配置（字段名你可以保持不变）
     postgres_user: str = "douban_user"
@@ -27,7 +30,7 @@ class Settings(BaseSettings):
     )
     # 默认导出路径（脚本使用）。
     default_export_path: Path = Path("doc/movies.csv")
-    logs_root: Path = Path("logs")
+    logs_root: Path = PROJECT_ROOT / "logs"
 
     model_config = SettingsConfigDict(
         env_file=".env",          # 自动读 .env
