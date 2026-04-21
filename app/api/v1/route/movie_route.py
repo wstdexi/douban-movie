@@ -11,7 +11,7 @@ from app.schemas.movie import MovieBase, MovieListQuery, OutMovie, MovieUpdate
 from app.services.movie_service import movie_service
 
 
-# 电影路由统一归类到 OpenAPI 的 movies 标签下。
+# 电影路由统一归类到 OpenAPI 的 movies 标签下，并且添加token校验。
 router = APIRouter(
     tags=["movies"],
     dependencies=[Depends(get_current_user)],
