@@ -12,31 +12,5 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  grpc-server:
-    build: .
-    container_name: douban-grpc
-    depends_on:
-      - postgres
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      RUN_ALEMBIC_UPGRADE: "1"
-    ports:
-      - "50051:50051"
-      - "8000:8000"
-    command: ["python", "-m", "app.transports.grpc.server"]
-
-  grpc-client:
-    build: .
-    container_name: douban-grpc-client
-    depends_on:
-      - grpc-server
-    environment:
-      GRPC_TARGET: grpc-server:50051
-    command: ["python", "-m", "app.transports.grpc.clients.all_in_one_client", "demo"]
-
 volumes:
   pgdata:

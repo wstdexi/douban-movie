@@ -1,29 +1,19 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 
-from alembic import command
-from alembic.config import Config
 from fastapi import FastAPI
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.route import movie_route
 from app.core.middlewares import register_middlewares
 from app.log.log import log
-
-
-def run_migrations() -> None:
-    """Apply all pending Alembic migrations."""
-    project_root = Path(__file__).resolve().parent.parent
-    alembic_ini = project_root / "alembic.ini"
-    alembic_cfg = Config(str(alembic_ini))
-    command.upgrade(alembic_cfg, "head")
+from app.models.system.migration import run_startup_migrations
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     log.bind(x_request_id="-").info("Running startup migrations...")
     try:
-        run_migrations()
+        run_startup_migrations()
         log.bind(x_request_id="-").info("Database schema is up to date.")
     except Exception:
         log.bind(x_request_id="-").exception("Failed to run database migrations.")

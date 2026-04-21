@@ -9,6 +9,7 @@ from app.settings import settings
 
 # Import all model modules so metadata includes every table.
 from app.models.movies import Movie  # noqa: F401
+from app.models.test import Test  # noqa: F401
 from app.models.user import User  # noqa: F401
 
 # this is the Alembic Config object, which provides
