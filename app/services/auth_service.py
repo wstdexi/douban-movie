@@ -3,7 +3,7 @@
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
-from app.core.user_crud import user_core_controller
+from app.core.user_crud import user_core_crud
 from app.models.user import User
 from app.schemas.login import CredentialsSchema, JWTOut
 from app.settings import settings
@@ -45,7 +45,7 @@ class AuthService:
         if not user_id:
             raise ValueError("Invalid token payload")
 
-        user = user_core_controller.get(db, int(user_id))
+        user = user_core_crud.get(db, int(user_id))
         if not user:
             raise ValueError("User not found")
 

@@ -5,22 +5,30 @@ from sqlalchemy.orm import Session
 
 from app.core.crud import CRUDBase
 from app.models.movies import Movie
-from app.schemas.movie import MovieBase, MovieListQuery, MovieUpdate
+from app.schemas.movie import MovieBase, MovieUpdate
 
 
-class MovieCoreController(CRUDBase[Movie, MovieBase, MovieUpdate]):
+class MovieCoreCrud(CRUDBase[Movie, MovieBase, MovieUpdate]):
     def __init__(self) -> None:
         super().__init__(Movie)
 
     # 分页查询电影列表（可按评分区间过滤）。
-    def list_movies(self, db: Session, query: MovieListQuery) -> list[Movie]:
+    def list_movies(
+        self,
+        db: Session,
+        *,
+        skip: int,
+        limit: int,
+        min_rating: float | None = None,
+        max_rating: float | None = None,
+    ) -> list[Movie]:
         stmt = select(Movie)
-        if query.min_rating is not None:
-            stmt = stmt.where(Movie.rating >= query.min_rating)
-        if query.max_rating is not None:
-            stmt = stmt.where(Movie.rating <= query.max_rating)
+        if min_rating is not None:
+            stmt = stmt.where(Movie.rating >= min_rating)
+        if max_rating is not None:
+            stmt = stmt.where(Movie.rating <= max_rating)
         stmt = stmt.order_by(Movie.rating.desc(), Movie.comments_count.desc(), Movie.id.asc())
-        stmt = stmt.offset(query.skip).limit(query.limit)
+        stmt = stmt.offset(skip).limit(limit)
         return list(db.scalars(stmt).all())
 
     # 通过URL查询电影。
@@ -40,5 +48,5 @@ class MovieCoreController(CRUDBase[Movie, MovieBase, MovieUpdate]):
         return int(db.scalar(stmt) or 0)
 
 
-movie_core_controller = MovieCoreController()
+movie_core_crud = MovieCoreCrud()
 

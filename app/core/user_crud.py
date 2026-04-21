@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.core.crud import CRUDBase
 from app.models.user import User
+from app.schemas.user import UserCreate, UserUpdate
 
 
-class UserCoreController(CRUDBase[User, object, object]):
+class UserCoreCrud(CRUDBase[User, UserCreate, UserUpdate]):
     def __init__(self) -> None:
         super().__init__(User)
 
@@ -32,5 +33,7 @@ class UserCoreController(CRUDBase[User, object, object]):
         return db.scalar(stmt)
 
 
-user_core_controller = UserCoreController()
+user_core_crud = UserCoreCrud()
+# Backward-compatible alias used by existing modules.
+user_core_controller = user_core_crud
 
