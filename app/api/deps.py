@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.user_crud import user_core_controller
 from app.models.system.session import SessionLocal
 from app.models.user import User
+from app.services.token_blacklist import is_token_revoked
 from app.settings import settings
 
 
@@ -36,6 +37,12 @@ def get_current_user(
         )
 
     token = credentials.credentials
+    if is_token_revoked(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         payload = jwt.decode(
             token,

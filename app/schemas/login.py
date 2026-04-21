@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class CredentialsSchema(BaseModel):
@@ -10,6 +10,13 @@ class CredentialsSchema(BaseModel):
 
     class Config:
         populate_by_name=True
+
+
+class RegisterSchema(BaseModel):
+    username: str = Field(min_length=1, max_length=100, description="用户名")
+    email: EmailStr = Field(description="邮箱")
+    password: str = Field(min_length=6, description="密码")
+    signature: str | None = Field(default=None, max_length=100, description="个性签名")
 
 
 class JWTOut(BaseModel):
@@ -28,4 +35,4 @@ class JWTPayload(BaseModel):
         populate_by_name = True
 
 
-__all__ = ["CredentialsSchema","JWTOut", "JWTPayload"]
+__all__ = ["CredentialsSchema", "RegisterSchema", "JWTOut", "JWTPayload"]

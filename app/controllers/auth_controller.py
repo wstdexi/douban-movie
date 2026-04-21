@@ -1,6 +1,6 @@
 # 认证参数校验控制器：负责登录与刷新接口的输入校验。
 
-from app.schemas.login import CredentialsSchema
+from app.schemas.login import CredentialsSchema, RegisterSchema
 
 
 class AuthRequestController:
@@ -15,6 +15,13 @@ class AuthRequestController:
     def validate_refresh_input(self, refresh_token: str | None) -> None:
         if not refresh_token:
             raise ValueError("Missing refreshToken")
+
+    # 校验注册输入。
+    def validate_register_input(self, payload: RegisterSchema) -> None:
+        if not payload.username.strip():
+            raise ValueError("username is required")
+        if not payload.password:
+            raise ValueError("password is required")
 
 
 auth_request_controller = AuthRequestController()
