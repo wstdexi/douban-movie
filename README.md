@@ -3,7 +3,7 @@
 基于 FastAPI + SQLAlchemy + PostgreSQL 的学习项目，包含：
 
 - 电影 CRUD 接口（`/movies`）
-- JWT 登录与鉴权（`/v1/auth/login`、`/v1/auth/refresh`、`/v1/auth/me`）
+- JWT 登录与鉴权（`/v1/auth/register`、`/v1/auth/login`、`/v1/auth/refresh`、`/v1/auth/me`、`/v1/auth/logout`）
 - 初始化脚本（建表、创建超级用户、抓取豆瓣 Top250 数据）
 
 ## 1. 环境要求
@@ -38,18 +38,23 @@ cp .env.example .env
 
 执行初始化脚本（会做以下事情）：
 
-1. 初始化数据库结构（Alembic 开关由 `RUN_ALEMBIC_UPGRADE` 控制）
+1. 初始化业务数据（创建超级用户、抓取并写入豆瓣电影数据）
 2. 根据配置创建超级用户（如果不存在）
 3. 抓取并写入豆瓣电影数据
 
 ```bash
-python app/init_data.py
+uv run python -m app.init_data
 ```
+
+说明：
+
+- 数据库表结构由 Alembic 管理。
+- 启动服务时会自动执行迁移检查与升级（`upgrade head`）。
 
 ## 5. 启动服务
 
 ```bash
-python app/main.py
+uv run python -m app.main
 ```
 
 启动后访问：
@@ -60,7 +65,7 @@ python app/main.py
 
 ### 6.1 登录获取 token
 
-- 接口：`POST /v1/auth/login`
+- 接口：`POST /v1/auth/login`（或先调用 `POST /v1/auth/register` 完成注册）
 - 请求体：
 
 ```json
@@ -71,6 +76,13 @@ python app/main.py
 ```
 
 - 预期：返回 `token` 和 `refreshToken`
+
+### 6.1.1 退出登录
+
+- 接口：`POST /v1/auth/logout`
+- 头部：
+  - `Authorization: Bearer <token>`
+- 预期：返回 `logged out`，并使当前 token 失效
 
 ### 6.2 使用 access token 获取当前用户
 
@@ -104,7 +116,7 @@ python app/main.py
 ## 7. 常见问题
 
 - 若登录失败，请确认：
-  - 已执行 `python app/init_data.py`
+  - 已执行 `uv run python -m app.init_data`
   - `.env` 中 `SUPERUSER_PASSWORD` 与登录密码一致
 - 若数据库连接失败，请确认：
   - PostgreSQL 已启动
