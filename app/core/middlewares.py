@@ -12,7 +12,7 @@ from app.log.log import log
 
 
 def register_middlewares(app: FastAPI) -> None:
-    """Register HTTP middlewares for the FastAPI app."""
+
     public_paths = {
         "/",
         "/docs",
@@ -23,6 +23,7 @@ def register_middlewares(app: FastAPI) -> None:
         "/v1/auth/refresh",
     }
 
+# middleware登录验证
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next):
         path = request.url.path
@@ -73,6 +74,7 @@ def register_middlewares(app: FastAPI) -> None:
         )
         return await call_next(request)
 
+# 请求日志
     @app.middleware("http")
     async def request_log_middleware(request: Request, call_next):
         request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex
